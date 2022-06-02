@@ -1,163 +1,259 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:audio3/music_home.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
+import 'package:marquee/marquee.dart';
 import 'package:on_audio_query/on_audio_query.dart';
 
-class Nowplaying extends StatefulWidget {
-  int? index = 0;
-  List<SongModel>? songModel2;
-  List<Audio> allSongs;
-  Nowplaying({Key? key, required this.allSongs, this.index, this.songModel2})
-      : super(key: key);
+class NowPlaying extends StatefulWidget {
+  const NowPlaying({
+    Key? key,
+  }) : super(key: key);
 
   @override
-  _NowplayingState createState() => _NowplayingState();
+  State<NowPlaying> createState() => _NowPlayingState();
 }
 
-class _NowplayingState extends State<Nowplaying> {
-  final assetAudioplayer = AssetsAudioPlayer.withId('music');
-  final OnAudioQuery _audioQuery = OnAudioQuery();
 
-  @override
-  void initState() {
-    // TODO: implement initState
-    super.initState();
 
-    assetAudioplayer.open(
-      Playlist(
-        audios: widget.allSongs,
-        startIndex: widget.index!,
-      ),
-      autoStart: true,
-      notificationSettings: const NotificationSettings(stopEnabled: false),
-      showNotification: true,
-    );
-  }
+AssetsAudioPlayer player = AssetsAudioPlayer();
 
-  // double _currentSliderValue = 20;
+class _NowPlayingState extends State<NowPlaying>
+    with SingleTickerProviderStateMixin {
+  // bool _isPLaying = false;
+
   @override
   Widget build(BuildContext context) {
-    List<SongModel> songmodel = [];
-    if (widget.songModel2 == null) {
-      _audioQuery.querySongs().then((value) {
-        songmodel = value;
-      });
-    } else {
-      songmodel = widget.songModel2!;
-    }
-
     return Scaffold(
-      appBar: AppBar(
-        backgroundColor: Colors.black,
-        title: const Text("Now Playing"),
-        centerTitle: true,
-        // leading: Icon(Icons.settings),
-        actions: [
-          Icon(
-            Icons.arrow_drop_down_sharp,
-            size: 40,
-          )
-        ],
-      ),
-      body: Container(
-        decoration: BoxDecoration(
-            gradient: LinearGradient(
-                colors: [Color.fromARGB(255, 128, 120, 120), Colors.white])),
-        child: Padding(
-          padding: const EdgeInsets.all(10.0),
-          child: assetAudioplayer.builderCurrent(builder: ((context, playing) {
-            return Center(
-                child: Padding(
-              padding: EdgeInsets.symmetric(horizontal: 20),
-              child: Column(
-                mainAxisAlignment: MainAxisAlignment.center,
-                children: [
-                  SizedBox(
-                    height: 50,
-                    width: double.infinity,
-                    child: Text(
-                      '${playing.playlist.current.metas.title}',
-                      textAlign: TextAlign.center,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  SizedBox(
-                    height: 250,
-                    width: 250,
-                    child: QueryArtworkWidget(
-                        artworkBorder: BorderRadius.circular(12),
-                        artworkFit: BoxFit.cover,
-                        nullArtworkWidget: Icon(Icons.music_note, size: 400),
-                        size: 200,
-                        id: int.parse(playing.playlist.current.metas.id!),
-                        type: ArtworkType.AUDIO),
-                  ),
-                  SizedBox(height: 20),
-                  Text(
-                    '${playing.playlist.current.metas.artist}',
-                  ),
-                  SizedBox(
-                    height: 30,
-                  ),
-                  assetAudioplayer.builderRealtimePlayingInfos(
-                      builder: (context, RealtimePlayingInfos? infos) {
-                    if (infos == null) {
-                      return SizedBox();
-                    }
-                    return Padding(
-                      padding: EdgeInsets.symmetric(horizontal: 40),
-                      child: ProgressBar(
-                        progress: infos.currentPosition,
-                        total: infos.duration,
-                        onSeek: (duration) {
-                          assetAudioplayer.seek(duration);
-                        },
-                      ),
-                    );
-                  }),
-                  SizedBox(
-                    height: 20,
-                  ),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    mainAxisSize: MainAxisSize.max,
-                    children: [
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.playlist_add),
-                      ),
-                      IconButton(
-                        onPressed: () {},
-                        icon: Icon(Icons.skip_previous_rounded),
-                      ),
-                      assetAudioplayer.builderIsPlaying(
-                          builder: ((context, isPlaying) {
-                        return IconButton(
-                            onPressed: () {
-                              if (isPlaying) {
-                                assetAudioplayer.pause();
-                              } else {
-                                assetAudioplayer.play();
-                              }
-                            },
-                            icon: Icon(
-                                isPlaying ? Icons.pause : Icons.play_arrow));
-                      })),
-                      IconButton(
-                        onPressed: () {
-                          assetAudioplayer.next();
-                        },
-                        icon: Icon(Icons.skip_next),
-                      ),
-                      IconButton(onPressed: () {}, icon: Icon(Icons.favorite)),
-                    ],
-                  ),
-                ],
-              ),
-            ));
-          })),
+        // backgroundColor: Colors.transparent ,
+
+        // appBar: AppBar(
+        //   backgroundColor: Colors.transparent,
+        //   elevation: 0,
+        //   actions: [
+        //     IconButton(
+        //         onPressed: () {
+        //           Navigator.of(context).pop();
+        //         },
+        //         icon: const Icon(Icons.arrow_drop_down))
+        //   ],
+        //   centerTitle: true,
+        // ),
+        body: Container(
+      // ########## GRADIENT THEME ##########
+
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topLeft,
+          end: Alignment.bottomCenter,
+          colors: [
+            Color.fromARGB(255, 78, 16, 13),
+            Color.fromARGB(255, 66, 34, 34),
+            Colors.black,
+          ],
         ),
       ),
+
+// ########## PLAY-PAUSE-NEXT-PREVIOUS ##########
+
+      child: player.builderCurrent(
+        builder: (context, playing) {
+          
+          return Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            children: [
+              const SizedBox(
+                height: 10,
+              ),
+              SizedBox(
+                height: 30,
+                width: 300,
+                child: Marquee(
+                  velocity: 20,
+                  blankSpace: 50,
+
+                  text: '${playing.playlist.current.metas.title}',
+                  //textAlign: TextAlign.center,
+                  style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 18.0,
+                      fontWeight: FontWeight.bold),
+                ),
+              ),
+              const SizedBox(
+                height: 13,
+              ),
+              SizedBox(
+                height: 30,
+                width: 150,
+                child: Marquee(
+                  blankSpace: 20,
+                  velocity: 20,
+                  text: '${playing.playlist.current.metas.artist}',
+                  //textAlign: TextAlign.center,
+                  style: const TextStyle(
+                    color: Color.fromARGB(255, 3, 2, 2),
+                    fontSize: 16.0,
+                    fontWeight: FontWeight.w400,
+                  ),
+                ),
+              ),
+              const SizedBox(
+                height: 10,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(
+                    top: 10, left: 43, right: 42, bottom: 20),
+                child: SizedBox(
+                  height: 400,
+                  width: 450,
+                  child: QueryArtworkWidget(
+                      artworkBorder: BorderRadius.circular(20),
+                      artworkFit: BoxFit.cover,
+                      artworkQuality: FilterQuality.high,
+                      quality: 100,
+                      nullArtworkWidget: Image.asset("assets/image.jpg"),
+                      size: 300,
+                      id: int.parse(playing.playlist.current.metas.id!),
+                      type: ArtworkType.AUDIO),
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 18.0, right: 18.0),
+                child: seekBarWidget(context),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+              Padding(
+                padding: const EdgeInsets.only(left: 12, right: 12),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.center,
+                  children: [
+                    // const Spacer(),
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(
+                        Icons.shuffle,
+                        size: 28,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const Spacer(),
+                    InkWell(
+                      child: IconButton(
+                        onPressed: () {
+                          player.previous();
+                        },
+                        icon: const Icon(Icons.skip_previous_sharp,
+                            size: 48, color: Colors.white),
+                      ),
+                    ),
+                    const Spacer(),
+
+                    player.builderIsPlaying(
+                      builder: ((context, isPlaying) {
+                        return Padding(
+                          padding: const EdgeInsets.only(bottom: 15),
+                          child: IconButton(
+                              icon: Icon(
+                                isPlaying
+                                    ? Icons.pause_circle
+                                    : Icons.play_circle,
+                                size: 58,
+                              ),
+                              onPressed: () {
+                                player.playOrPause();
+                              },
+                              color: Colors.white),
+                        );
+                      }),
+                    ),
+                    // GestureDetector(
+                    //   onTap: () {
+                    //     animateicon();
+                    //   },
+                    //   child: AnimatedIcon(
+                    //     icon: AnimatedIcons.pause_play,
+                    //     progress: iconCntroller,
+                    //     size: 65,
+                    //     color: const Color.fromARGB(255, 231, 217, 90),
+                    //   ),
+                    // ),
+
+                    const Spacer(),
+
+                    // InkWell(
+                    //   child: IconButton(
+                    //     onPressed: () {
+                    //       // player.seekBy(Duration(seconds:10));
+                    //       assetsAudioPlayer.next();
+                    //     },
+                    //     icon: const Icon(
+                    //       Icons.skip_next_sharp,
+                    //       size: 40,
+                    //       color: Color.fromARGB(255, 231, 217, 90),
+                    //     ),
+                    //   ),
+                    // ),
+                    IconButton(
+                      onPressed: playing.index == allSongs.length - 1
+                          ? () {}
+                          : () {
+                              player.next();
+                            },
+                      icon: playing.index == allSongs.length - 1
+                          ? const Icon(
+                              Icons.skip_next_sharp,
+                              size: 48,
+                              color: Color.fromARGB(255, 94, 91, 66),
+                            )
+                          : const Icon(Icons.skip_next,
+                              size: 48, color: Colors.white),
+                    ),
+                    const Spacer(),
+
+                    IconButton(
+                      onPressed: () {},
+                      icon: const Icon(Icons.repeat,
+                          size: 28, color: Colors.white),
+                    ),
+                    // const Spacer(),
+                  ],
+                ),
+              ),
+            ],
+          );
+        },
+      ),
+    ));
+  }
+
+  // ########## SEEK BAR ##########
+
+  Widget seekBarWidget(BuildContext ctx) {
+    return player.builderRealtimePlayingInfos(
+      builder: (ctx, infos) {
+        Duration currentPosition = infos.currentPosition;
+        Duration total = infos.duration;
+        return Padding(
+          padding: const EdgeInsets.only(left: 20.0, right: 20.0),
+          child: ProgressBar(
+              progress: currentPosition,
+              total: total,
+              onSeek: (to) {
+                player.seek(to);
+              },
+              timeLabelTextStyle: const TextStyle(color: Colors.white),
+              baseBarColor: const Color.fromARGB(255, 19, 0, 0),
+              progressBarColor: const Color.fromARGB(255, 68, 16, 9),
+              bufferedBarColor: Colors.red,
+              thumbColor: const Color.fromARGB(255, 97, 2, 2)),
+        );
+      },
     );
   }
 }

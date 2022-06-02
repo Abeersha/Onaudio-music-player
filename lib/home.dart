@@ -1,42 +1,52 @@
-
-import 'package:audio3/Nowplaying.dart';
+import 'package:assets_audio_player/assets_audio_player.dart';
 import 'package:audio3/favorites.dart';
+import 'package:audio3/miniscreen.dart';
 import 'package:audio3/music_home.dart';
-import 'package:audio3/playlist.dart';
+import 'package:audio3/playlist/playlist.dart';
+import 'package:audio3/playlist/playlistinfo.dart';
 
 import 'package:flutter/material.dart';
 
 class MusicHome extends StatefulWidget {
-  const MusicHome ({ Key? key }) : super(key: key);
+  const MusicHome({Key? key}) : super(key: key);
 
   @override
   State<MusicHome> createState() => _MusicHomeState();
 }
 
 class _MusicHomeState extends State<MusicHome> {
+  AssetsAudioPlayer assetsAudioPlayer = AssetsAudioPlayer.withId('0');
 
-int _currentSelectedIndex = 0;
+  Audio find(List<Audio> source, String fromPath) {
+    return source.firstWhere((element) => element.path == fromPath);
+  }
+
+  int _currentSelectedIndex = 0;
 
   final _pages = [
-  
     Home(),
+
+    Favourite(),
+
+    playlistscreen(),
     
-    Favorites(),
-    Playlist(),
+
     // Album(),
 
     // ScreenPayment(),
     // ScreenAccount(),
   ];
 
-
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-       body: _pages[_currentSelectedIndex],
+      body: _pages[_currentSelectedIndex],
+      bottomSheet: const MiniPlayer(),
       bottomNavigationBar: BottomNavigationBar(
+        
+        backgroundColor: Colors.black,
         unselectedItemColor: Colors.grey,
-        selectedItemColor: Colors.black,
+        selectedItemColor: Colors.white,
         currentIndex: _currentSelectedIndex,
         onTap: (newIndex) {
           setState(() {
@@ -46,8 +56,10 @@ int _currentSelectedIndex = 0;
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Music'),
           // BottomNavigationBarItem(icon: Icon(Icons.headset), label: 'Now Playing'),
-          BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Favourites'),
-          BottomNavigationBarItem(icon: Icon(Icons.playlist_add), label: 'Playlist'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.favorite), label: 'Favourites'),
+          BottomNavigationBarItem(
+              icon: Icon(Icons.playlist_add), label: 'Playlist'),
           // BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Albums'),
           // BottomNavigationBarItem(icon: Icon(Icons.payment),label: 'Payment'),
           // BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),

@@ -1,10 +1,31 @@
 
 
+
 import 'package:audio3/splash_screen.dart';
+import 'package:hive_flutter/hive_flutter.dart';
+import 'package:on_audio_room/on_audio_room.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
-void main() {
+import 'Model/model.dart';
+
+String boxname = 'songs';
+
+void main() async{
+  await Hive.initFlutter();
+
+
+ await OnAudioRoom().initRoom();
+  
+
+   Hive.registerAdapter(SongsdbAdapter());
+  //  Hive.registerAdapter(FavoritesEntityAdapter());
+  //  Hive.registerAdapter(PlaylistEntityAdapter());
+  
+  await Hive.openBox<List>(boxname);
+  
+
+ 
   runApp(const MyApp());
 }
 void permission(){
