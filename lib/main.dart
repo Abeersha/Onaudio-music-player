@@ -1,37 +1,36 @@
-
-
-
+import 'package:audio3/Model/playlist_model.dart';
 import 'package:audio3/splash_screen.dart';
 import 'package:hive_flutter/hive_flutter.dart';
-import 'package:on_audio_room/on_audio_room.dart';
 import 'package:permission_handler/permission_handler.dart';
 import 'package:flutter/material.dart';
 
 import 'Model/model.dart';
 
 String boxname = 'songs';
+// late Box<> playlistBox;
 
-void main() async{
+void main() async {
   await Hive.initFlutter();
+  // await OnAudioRoom().initRoom();
 
+  Hive.registerAdapter(SongsdbAdapter());
+  Hive.registerAdapter(ModelPlaylistAdapter());
 
- await OnAudioRoom().initRoom();
-  
-
-   Hive.registerAdapter(SongsdbAdapter());
   //  Hive.registerAdapter(FavoritesEntityAdapter());
   //  Hive.registerAdapter(PlaylistEntityAdapter());
-  
-  await Hive.openBox<List>(boxname);
-  
 
- 
+  await Hive.openBox<List>(boxname);
+// playlistBox =
+  await Hive.openBox<ModelPlaylist>('playlists');
+
+  // await Hive.openBox<List>('favourites');
+
   runApp(const MyApp());
 }
-void permission(){
+
+void permission() {
   Permission.storage.request();
-  
-  }
+}
 
 class MyApp extends StatefulWidget {
   const MyApp({Key? key}) : super(key: key);
@@ -41,8 +40,6 @@ class MyApp extends StatefulWidget {
 }
 
 class _MyAppState extends State<MyApp> {
-  
-
   @override
   Widget build(BuildContext context) {
     permission();
@@ -50,12 +47,9 @@ class _MyAppState extends State<MyApp> {
       debugShowCheckedModeBanner: false,
       title: 'Flutter Demo',
       theme: ThemeData(
-       
         primarySwatch: Colors.blue,
       ),
       home: const SplashScreen(),
     );
   }
-
 }
-

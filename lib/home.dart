@@ -3,7 +3,6 @@ import 'package:audio3/favorites.dart';
 import 'package:audio3/miniscreen.dart';
 import 'package:audio3/music_home.dart';
 import 'package:audio3/playlist/playlist.dart';
-import 'package:audio3/playlist/playlistinfo.dart';
 
 import 'package:flutter/material.dart';
 
@@ -24,17 +23,9 @@ class _MusicHomeState extends State<MusicHome> {
   int _currentSelectedIndex = 0;
 
   final _pages = [
-    Home(),
-
+    const Home(),
     Favourite(),
-
-    playlistscreen(),
-    
-
-    // Album(),
-
-    // ScreenPayment(),
-    // ScreenAccount(),
+    const playlistscreen(),
   ];
 
   @override
@@ -43,7 +34,6 @@ class _MusicHomeState extends State<MusicHome> {
       body: _pages[_currentSelectedIndex],
       bottomSheet: const MiniPlayer(),
       bottomNavigationBar: BottomNavigationBar(
-        
         backgroundColor: Colors.black,
         unselectedItemColor: Colors.grey,
         selectedItemColor: Colors.white,
@@ -55,26 +45,12 @@ class _MusicHomeState extends State<MusicHome> {
         },
         items: const [
           BottomNavigationBarItem(icon: Icon(Icons.home), label: 'Music'),
-          // BottomNavigationBarItem(icon: Icon(Icons.headset), label: 'Now Playing'),
           BottomNavigationBarItem(
               icon: Icon(Icons.favorite), label: 'Favourites'),
           BottomNavigationBarItem(
               icon: Icon(Icons.playlist_add), label: 'Playlist'),
-          // BottomNavigationBarItem(icon: Icon(Icons.favorite), label: 'Albums'),
-          // BottomNavigationBarItem(icon: Icon(Icons.payment),label: 'Payment'),
-          // BottomNavigationBarItem(icon: Icon(Icons.person), label: 'Account'),
         ],
       ),
     );
   }
 }
-//       appBar: AppBar(
-//         title: const Text("MusicHome"),
-        
-//       ),
-//       body: const Center(
-//         child: Text("Music Home"),
-//       ),
-//     );
-//   }
-// }

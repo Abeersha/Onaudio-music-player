@@ -1,5 +1,8 @@
 import 'package:assets_audio_player/assets_audio_player.dart';
+import 'package:audio3/Model/model.dart';
 import 'package:audio3/music_home.dart';
+import 'package:audio3/playlist/playlistfunction.dart';
+import 'package:audio3/splash_screen.dart';
 import 'package:audio_video_progress_bar/audio_video_progress_bar.dart';
 import 'package:flutter/material.dart';
 import 'package:marquee/marquee.dart';
@@ -14,9 +17,9 @@ class NowPlaying extends StatefulWidget {
   State<NowPlaying> createState() => _NowPlayingState();
 }
 
+AssetsAudioPlayer player = AssetsAudioPlayer.withId('0');
 
-
-AssetsAudioPlayer player = AssetsAudioPlayer();
+bool isRepeat = false;
 
 class _NowPlayingState extends State<NowPlaying>
     with SingleTickerProviderStateMixin {
@@ -25,20 +28,6 @@ class _NowPlayingState extends State<NowPlaying>
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-        // backgroundColor: Colors.transparent ,
-
-        // appBar: AppBar(
-        //   backgroundColor: Colors.transparent,
-        //   elevation: 0,
-        //   actions: [
-        //     IconButton(
-        //         onPressed: () {
-        //           Navigator.of(context).pop();
-        //         },
-        //         icon: const Icon(Icons.arrow_drop_down))
-        //   ],
-        //   centerTitle: true,
-        // ),
         body: Container(
       // ########## GRADIENT THEME ##########
 
@@ -58,7 +47,8 @@ class _NowPlayingState extends State<NowPlaying>
 
       child: player.builderCurrent(
         builder: (context, playing) {
-          
+          int index = playing.index;
+
           return Column(
             mainAxisAlignment: MainAxisAlignment.center,
             children: [
@@ -121,6 +111,104 @@ class _NowPlayingState extends State<NowPlaying>
               const SizedBox(
                 height: 20,
               ),
+
+              //<<<<<+_Pl_&_Fav>>>>>//
+
+              Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 25),
+                child: Row(
+                  children: [
+                    IconButton(
+                      onPressed: () {
+                        dialogBox(context, allSongs, index);
+                      },
+                      icon: const Icon(
+                        Icons.playlist_add_rounded,
+                        color: Colors.white,
+                        size: 35,
+                      ),
+                    ),
+                    const Spacer(),
+                    Builder(builder: (context) {
+                      favouriteAllsongs = box.get('favourites') ?? [];
+
+                      //  final box =    Boxes.getInstance(boxname);
+
+                      bool isAdded = favouriteAllsongs
+                          .where((element) =>
+                              element.id == allSongs[index].id.toString())
+                          .isNotEmpty;
+
+                      return IconButton(
+                        onPressed: () {
+                          if (!isAdded) {
+                            favouriteAllsongs.add(Songsdb(
+                              title: allSongs[index].title,
+                              artist: allSongs[index].artist,
+                              duration: allSongs[index].duration.toString(),
+                              id: allSongs[index].id.toString(),
+                              songUri: allSongs[index].uri,
+                            ));
+
+                            box.put('favourites', favouriteAllsongs);
+
+                            final snackBar = SnackBar(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                              backgroundColor: Colors.white,
+                              content: const Text(
+                                ' Added to favourites',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            );
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+                          } else {
+                            final snackBar = SnackBar(
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(13),
+                              ),
+                              backgroundColor: Colors.white,
+                              content: const Text(
+                                'Song removed from favourites',
+                                textAlign: TextAlign.center,
+                                style: TextStyle(
+                                    color: Colors.red,
+                                    fontWeight: FontWeight.bold),
+                              ),
+                            );
+                            ScaffoldMessenger.of(context)
+                                .showSnackBar(snackBar);
+
+                            int favoriteSongIndex =
+                                favouriteAllsongs.indexWhere((element) =>
+                                    element.id == dbSongs[index].id);
+
+                            favouriteAllsongs.removeAt(favoriteSongIndex);
+
+                            box.put('favourites', favouriteAllsongs);
+                          }
+                          setState(() {});
+                        },
+                        icon: Icon(
+                          Icons.favorite,
+                          color: isAdded ? Colors.red : Colors.white,
+                          size: 30,
+                        ),
+                      );
+                    }),
+                  ],
+                ),
+              ),
+              const SizedBox(
+                height: 20,
+              ),
+
+              //<<<<<SeekBar>>>>>//
               Padding(
                 padding: const EdgeInsets.only(left: 18.0, right: 18.0),
                 child: seekBarWidget(context),
@@ -128,100 +216,108 @@ class _NowPlayingState extends State<NowPlaying>
               const SizedBox(
                 height: 20,
               ),
+
+              //<<<<<Playing_Controls>>>>>//
               Padding(
-                padding: const EdgeInsets.only(left: 12, right: 12),
+                padding: const EdgeInsets.symmetric(horizontal: 15),
                 child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
                   children: [
-                    // const Spacer(),
+                    //
+                    //<<<<<Shuffle>>>>>//
                     IconButton(
-                      onPressed: () {},
-                      icon: const Icon(
+                      onPressed: () {
+                        player.toggleShuffle();
+
+                        setState(() {});
+                      },
+                      icon: Icon(
                         Icons.shuffle,
                         size: 28,
-                        color: Colors.white,
+                        color: player.isShuffling.value
+                            ? Colors.grey
+                            : Colors.white,
                       ),
                     ),
-                    const Spacer(),
-                    InkWell(
+
+                    //<<<<<Previous>>>>>//
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15, right: 10),
                       child: IconButton(
                         onPressed: () {
                           player.previous();
                         },
-                        icon: const Icon(Icons.skip_previous_sharp,
-                            size: 48, color: Colors.white),
+                        icon: const Icon(
+                          Icons.skip_previous_sharp,
+                          size: 48,
+                          color: Colors.white,
+                        ),
                       ),
                     ),
-                    const Spacer(),
 
-                    player.builderIsPlaying(
-                      builder: ((context, isPlaying) {
-                        return Padding(
-                          padding: const EdgeInsets.only(bottom: 15),
-                          child: IconButton(
-                              icon: Icon(
-                                isPlaying
-                                    ? Icons.pause_circle
-                                    : Icons.play_circle,
-                                size: 58,
-                              ),
-                              onPressed: () {
-                                player.playOrPause();
-                              },
-                              color: Colors.white),
-                        );
-                      }),
-                    ),
-                    // GestureDetector(
-                    //   onTap: () {
-                    //     animateicon();
-                    //   },
-                    //   child: AnimatedIcon(
-                    //     icon: AnimatedIcons.pause_play,
-                    //     progress: iconCntroller,
-                    //     size: 65,
-                    //     color: const Color.fromARGB(255, 231, 217, 90),
-                    //   ),
-                    // ),
-
-                    const Spacer(),
-
-                    // InkWell(
-                    //   child: IconButton(
-                    //     onPressed: () {
-                    //       // player.seekBy(Duration(seconds:10));
-                    //       assetsAudioPlayer.next();
-                    //     },
-                    //     icon: const Icon(
-                    //       Icons.skip_next_sharp,
-                    //       size: 40,
-                    //       color: Color.fromARGB(255, 231, 217, 90),
-                    //     ),
-                    //   ),
-                    // ),
-                    IconButton(
-                      onPressed: playing.index == allSongs.length - 1
-                          ? () {}
-                          : () {
-                              player.next();
+                    //<<<<<Play_Pause>>>>>//
+                    SizedBox(
+                      height: 100,
+                      width: 100,
+                      child: player.builderIsPlaying(
+                        builder: ((context, isPlaying) {
+                          return IconButton(
+                            icon: Icon(
+                              isPlaying
+                                  ? Icons.pause_circle
+                                  : Icons.play_circle,
+                              size: 58,
+                            ),
+                            onPressed: () {
+                              player.playOrPause();
                             },
-                      icon: playing.index == allSongs.length - 1
-                          ? const Icon(
-                              Icons.skip_next_sharp,
-                              size: 48,
-                              color: Color.fromARGB(255, 94, 91, 66),
-                            )
-                          : const Icon(Icons.skip_next,
-                              size: 48, color: Colors.white),
+                            color: Colors.white,
+                          );
+                        }),
+                      ),
                     ),
-                    const Spacer(),
 
-                    IconButton(
-                      onPressed: () {},
-                      icon: const Icon(Icons.repeat,
-                          size: 28, color: Colors.white),
+                    //<<<<<Next>>>>>//
+                    Padding(
+                      padding: const EdgeInsets.only(bottom: 15, right: 10),
+                      child: IconButton(
+                        onPressed: playing.index == allSongs.length - 1
+                            ? () {}
+                            : () {
+                                player.next();
+                              },
+                        icon: playing.index == allSongs.length - 1
+                            ? const Icon(
+                                Icons.skip_next_sharp,
+                                size: 48,
+                                color: Color.fromARGB(255, 94, 91, 66),
+                              )
+                            : const Icon(
+                                Icons.skip_next,
+                                size: 48,
+                                color: Colors.white,
+                              ),
+                      ),
                     ),
-                    // const Spacer(),
+
+                    //<<<<<Repeat>>>>>//
+                    IconButton(
+                      onPressed: () {
+                        if (isRepeat) {
+                          player.setLoopMode(LoopMode.none);
+                          isRepeat = false;
+                        } else {
+                          player.setLoopMode(LoopMode.single);
+                          isRepeat = true;
+                        }
+                        setState(() {});
+                      },
+                      icon: Icon(
+                        Icons.repeat,
+                        size: 28,
+                        color: isRepeat ? Colors.grey : Colors.white,
+                      ),
+                    ),
                   ],
                 ),
               ),

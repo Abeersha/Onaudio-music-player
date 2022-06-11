@@ -14,14 +14,17 @@ class Songsdb extends HiveObject {
   @HiveField(3)
   String? id;
   @HiveField(4)
-  String? image;
+  String? songUri;
+
+ 
 
   Songsdb({
     required this.title,
     required this.artist,
     required this.duration,
     required this.id,
-    required this.image,
+    required this.songUri,
+  
   });
 }
 
@@ -29,7 +32,7 @@ class Songsdb extends HiveObject {
 
 class Boxes {
   // static Box<List>? _box;
-  static Box<List> getInstance() {
+  static Box<List> getInstance(String boxname) {
     return Hive.box<List>(boxname);
   }
 }
