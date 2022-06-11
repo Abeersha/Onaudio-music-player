@@ -52,10 +52,6 @@ class _SplashScreenState extends State<SplashScreen> {
     await box.put("musics", mappedSongs);
     dbSongs = box.get("musics") as List<Songsdb>;
 
-    // print('Db songs $dbSongs');
-
-    // print('fetching');
-
     for (var e in dbSongs) {
       audiosongs.add(
         Audio.file(

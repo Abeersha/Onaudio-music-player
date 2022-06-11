@@ -11,13 +11,12 @@ String boxname = 'songs';
 
 void main() async {
   await Hive.initFlutter();
-  // await OnAudioRoom().initRoom();
+  
 
   Hive.registerAdapter(SongsdbAdapter());
   Hive.registerAdapter(ModelPlaylistAdapter());
 
-  //  Hive.registerAdapter(FavoritesEntityAdapter());
-  //  Hive.registerAdapter(PlaylistEntityAdapter());
+ 
 
   await Hive.openBox<List>(boxname);
 // playlistBox =
